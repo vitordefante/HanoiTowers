@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Torres de Hanói</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background: linear-gradient(180deg, #dfe9f3, #fff);
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .wrapper {
+      background: #fff;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+      width: 700px;
+      max-width: 90%;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 25px;
+      color: #222;
+    }
+    .controls {
+      display: flex;
+      justify-content: space-around;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+    .control-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .control-item label {
+      font-weight: bold;
+      color: #333;
+    }
+    .control-item input[type="number"],
+    .control-item input[type="range"] {
+      padding: 6px;
+      border: 2px solid #90caf9;
+      border-radius: 6px;
+    }
+    .control-item input[type="range"] {
+      width: 160px;
+    }
+    .btn {
+      background-color: #1976d2;
+      color: white;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    .btn:hover {
+      background-color: #1565c0;
+    }
+    canvas {
+      display: block;
+      margin: 0 auto;
+      background: #fafafa;
+      border: 2px dashed #90caf9;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <h1>Torres de Hanói</h1>
+    <div class="controls">
+      <div class="control-item">
+        <label for="discos">Discos:</label>
+        <input type="number" id="discos" min="1" max="10" value="3">
+      </div>
+      <div class="control-item">
+        <label for="velocidade">Velocidade:</label>
+        <input type="range" id="velocidade" min="100" max="2000" step="100" value="500">
+      </div>
+      <button class="btn" onclick="start()">Iniciar</button>
+      <button class="btn" onclick="reset()">Resetar</button>
+    </div>
+    <canvas id="jogo" width="600" height="300"></canvas>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('jogo');
+    const ctx = canvas.getContext('2d');
+
+    let discos = 3;
+    let velocidade = 500;
+    let torres;
+    let passos;
+    let intervalo;
+
+    function desenhar() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Hastes
+      for (let i = 0; i < 3; i++) {
+        const x = 100 + i * 200;
+        ctx.fillStyle = '#1976d2';
+        ctx.fillRect(x - 5, 90, 10, 160);
+        ctx.fillStyle = '#64b5f6';
+        ctx.fillRect(x - 60, 250, 120, 10);
+      }
+
+      // Discos
+      for (let i = 0; i < 3; i++) {
+        const torre = torres[i];
+        torre.forEach((disco, j) => {
+          const largura = 25 + disco * 18;
+          const altura = 18;
+          const x = 100 + i * 200;
+          const y = 240 - j * altura;
+
+          ctx.fillStyle = `hsl(${disco * 40}, 70%, 55%)`;
+          ctx.fillRect(x - largura / 2, y, largura, altura);
+          ctx.strokeStyle = '#fff';
+          ctx.strokeRect(x - largura / 2, y, largura, altura);
+        });
+      }
+    }
+
+    function gerarPassos(n, origem, destino, auxiliar) {
+      if (n === 1) {
+        passos.push([origem, destino]);
+      } else {
+        gerarPassos(n - 1, origem, auxiliar, destino);
+        passos.push([origem, destino]);
+        gerarPassos(n - 1, auxiliar, destino, origem);
+      }
+    }
+
+    function executar() {
+      if (passos.length === 0) {
+        clearInterval(intervalo);
+        return;
+      }
+      const [origem, destino] = passos.shift();
+      const disco = torres[origem].pop();
+      torres[destino].push(disco);
+      desenhar();
+    }
+
+    function start() {
+      discos = parseInt(document.getElementById('discos').value);
+      velocidade = parseInt(document.getElementById('velocidade').value);
+
+      torres = [[], [], []];
+      for (let i = discos; i > 0; i--) {
+        torres[0].push(i);
+      }
+
+      passos = [];
+      gerarPassos(discos, 0, 2, 1);
+      desenhar();
+
+      clearInterval(intervalo);
+      intervalo = setInterval(executar, velocidade);
+    }
+
+    function reset() {
+      clearInterval(intervalo);
+      torres = [[], [], []];
+      desenhar();
+    }
+
+    desenhar();
+  </script>
+</body>
+</html>
