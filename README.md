@@ -3,7 +3,7 @@
 Desafio das Torres
 Simulador visual do clássico problema das Torres de Hanói.
 
-Como usar
+Como usar:
 Abra o arquivo index.html em qualquer navegador.
 
 Escolha a quantidade de discos.
